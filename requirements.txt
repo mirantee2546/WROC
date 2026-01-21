@@ -5,3 +5,4 @@ line-bot-sdk
 requests
 gunicorn
 crcmod
+werkzeug

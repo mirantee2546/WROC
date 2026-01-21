@@ -200,8 +200,8 @@ def dashboard():
                            completed=completed_orders,
                            orders=recent_orders)
 
-# แก้ไขตรงนี้: ลบ "# ... โค้ดส่ว" ออก แล้วใช้โครงสร้างนี้แทน
+# ส่วนท้ายของไฟล์ app.py ที่ถูกต้อง
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  # สร้างฐานข้อมูลอัตโนมัติ
-    app.run(debug=True, host='0.0.0.0')
+        db.create_all()  # สร้างตารางอัตโนมัติ
+    app.run(debug=False, host='0.0.0.0', port=10000)
