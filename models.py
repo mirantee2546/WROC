@@ -1,22 +1,22 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash # เพิ่มบรรทัดนี้
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    # เปลี่ยนชื่อจาก password เป็น password_hash ให้ตรงกับที่ฟังก์ชันเรียกใช้
+    password_hash = db.Column(db.String(255), nullable=False) 
     balance = db.Column(db.Float, default=0.0)
 
-    # ฟังก์ชันสำหรับเข้ารหัสรหัสผ่าน (ป้องกันการอ่านรหัสผ่านตรงๆ)
     def set_password(self, password):
-        self.password = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password)
 
-    # ฟังก์ชันสำหรับตรวจสอบรหัสผ่านตอน Login
     def check_password(self, password):
-        return check_password_hash(self.password, password)
+        # ตรวจสอบว่าใช้ self.password_hash
+        return check_password_hash(self.password_hash, password)
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
