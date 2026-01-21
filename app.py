@@ -197,9 +197,9 @@ def dashboard():
                            completed=completed_orders,
                            orders=recent_orders)
 
-# 4. Main Entry Point
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  # สร้างฐานข้อมูลอัตโนมัติ
-    # รันบน Render ผ่าน Port 10000
+        print("กำลังสร้างฐานข้อมูลและตาราง...")
+        db.create_all()
+        print("สร้างฐานข้อมูลสำเร็จ!")
     app.run(debug=False, host='0.0.0.0', port=10000)
