@@ -1,4 +1,5 @@
 import os
+import platform
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,13 +7,26 @@ from models import db, User, Order
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
 
-# 1. การตั้งค่า Path ฐานข้อมูลให้รองรับ Render
-basedir = os.path.abspath(os.path.dirname(__file__))
+# 1. Flask App Configuration
+app = Flask(__name__)
+
+# ตรวจสอบระบบปฏิบัติการเพื่อตั้งค่าตำแหน่งฐานข้อมูล (Database Path)
+if platform.system() == 'Windows':
+    # สำหรับรันใน VS Code บน Windows
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'wroc_database.db')
+    print("--- Running on Windows (Local) ---")
+else:
+    # สำหรับรันบน Render (Linux Cloud)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/wroc_database.db'
+    print("--- Running on Render (Cloud) ---")
+
+app.config['SECRET_KEY'] = 'dev-key-123'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # 2. LINE Configuration
 LINE_CHANNEL_ACCESS_TOKEN = 'sJqu5ROglXJpMK4l976CaezwEtwB4QS9z/iugKPOJVdx+zQCgEP9+iRP74IfG/NYjQeQw0nTD1bAiGHlUDdyhgtr13u/RHyHkjQRM6brS3lLZ1bN/lSgXk7IKD3jSSwZojoUZ+dZhyOQ8+zRGwCeTgdB04t89/1O/w1cDnyilFU='
 LINE_ADMIN_USER_ID = 'Uc96074081e475c7ba28fcb730b80e16e' 
-
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 
 def send_line_message(message):
@@ -21,15 +35,13 @@ def send_line_message(message):
     except Exception as e:
         print(f"Error: {e}")
 
-# 3. Flask App Configuration
-app = Flask(__name__)
-# ระบุตำแหน่งฐานข้อมูลให้ชัดเจนป้องกัน Error e3q8
-# แก้จุดที่ 1: เปลี่ยนตำแหน่งไฟล์ .db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/wroc_database.db'
-app.config['SECRET_KEY'] = 'dev-key-123'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+# 3. Database & Login Manager Initialization
 db.init_app(app)
+
+with app.app_context():
+    print("--- ระบบกำลังตรวจสอบและสร้างตารางฐานข้อมูล ---")
+    db.create_all()
+    print("--- ระบบฐานข้อมูลพร้อมใช้งานแล้ว ---")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -198,10 +210,6 @@ def dashboard():
                            completed=completed_orders,
                            orders=recent_orders)
 
-# แก้จุดที่ 2: ส่วนท้ายไฟล์
+# 4. Main Entry Point
 if __name__ == "__main__":
-    with app.app_context():
-        print("--- บังคับสร้างตารางใน /tmp ---")
-        db.create_all()
-        print("--- ระบบฐานข้อมูลพร้อมใช้งานแล้ว ---")
     app.run(debug=False, host='0.0.0.0', port=10000)
