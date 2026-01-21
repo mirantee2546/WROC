@@ -24,7 +24,8 @@ def send_line_message(message):
 # 3. Flask App Configuration
 app = Flask(__name__)
 # ระบุตำแหน่งฐานข้อมูลให้ชัดเจนป้องกัน Error e3q8
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'wroc_database.db')
+# แก้จุดที่ 1: เปลี่ยนตำแหน่งไฟล์ .db
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/wroc_database.db'
 app.config['SECRET_KEY'] = 'dev-key-123'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -197,9 +198,10 @@ def dashboard():
                            completed=completed_orders,
                            orders=recent_orders)
 
+# แก้จุดที่ 2: ส่วนท้ายไฟล์
 if __name__ == "__main__":
     with app.app_context():
-        print("กำลังสร้างฐานข้อมูลและตาราง...")
+        print("--- บังคับสร้างตารางใน /tmp ---")
         db.create_all()
-        print("สร้างฐานข้อมูลสำเร็จ!")
+        print("--- ระบบฐานข้อมูลพร้อมใช้งานแล้ว ---")
     app.run(debug=False, host='0.0.0.0', port=10000)
