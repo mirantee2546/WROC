@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* ปรับแต่งพื้นหลังเฉพาะหน้าสมัครสมาชิก */
+    body { 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; 
+        min-height: 100vh;
+    }
+    .card { border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .btn-register { background: #764ba2; border: none; border-radius: 10px; padding: 12px; color: white; }
+    .btn-register:hover { background: #5a397a; color: white; }
+</style>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-dark">สร้างบัญชี WROC</h2>
+                <p class="text-muted">เข้าสู่ระบบจัดการออเดอร์ที่ดีที่สุด</p>
+            </div>
+            <form action="/register" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">ชื่อผู้ใช้งาน</label>
+                    <input type="text" name="username" class="form-control" placeholder="ภาษาอังกฤษหรือตัวเลข" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">รหัสผ่าน</label>
+                    <input type="password" name="password" class="form-control" placeholder="อย่างน้อย 6 ตัวอักษร" required>
+                </div>
+                <button type="submit" class="btn btn-register w-100 fw-bold">สมัครสมาชิกตอนนี้</button>
+            </form>
+            <p class="text-center mt-3 small">มีบัญชีอยู่แล้ว? <a href="/login" class="text-decoration-none">เข้าสู่ระบบ</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

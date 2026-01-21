@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm p-4 border-0">
+            <h5 class="fw-bold mb-4"><i class="bi bi-pencil-square text-primary"></i> สร้างคำสั่งซื้อใหม่</h5>
+            <form action="/order" method="POST">
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-muted">เลือกบริการที่ต้องการ</label>
+                    <select name="service" class="form-select form-select-lg border-2" id="serviceSelect" style="border-color: #d1d9ff;">
+                        {% for s in services %}
+                        <option value="{{ s.id }}" data-price="{{ s.price }}">{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-muted">ลิงก์เป้าหมาย (URL)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-link-45deg"></i></span>
+                        <input type="url" name="link" class="form-control form-control-lg" placeholder="วางลิงก์โพสต์หรือโปรไฟล์ที่นี่" required>
+                    </div>
+                </div>
+
+                <div class="row align-items-end">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label small fw-bold text-muted">จำนวนที่ต้องการ</label>
+                        <input type="number" name="quantity" id="quantityInput" class="form-control form-control-lg border-2" value="100" min="10">
+                    </div>
+                    <div class="col-md-6 mb-4 text-end">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="small text-muted d-block">ราคาสุทธิ</span>
+                            <span class="h2 fw-bold text-primary mb-0"><span id="totalPrice">0</span> ฿</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3 shadow">ยืนยันการทำรายการ</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 p-4 mb-4 text-white" style="background: linear-gradient(45deg, #4e73df, #224abe);">
+            <h6 class="fw-bold"><i class="bi bi-shield-check"></i> ความปลอดภัยสูงสุด</h6>
+            <p class="small mb-0 opacity-75">เราไม่ขอรหัสผ่านโซเชียลของคุณ ระบบทำงานผ่าน API ปลอดภัย 100%</p>
+        </div>
+        <div class="card shadow-sm p-4 border-0">
+            <h6 class="fw-bold mb-3">คำถามที่พบบ่อย</h6>
+            <div class="small text-muted">
+                <p><strong>ยอดขึ้นเมื่อไหร่?</strong><br>เริ่มทำงานทันทีภายใน 5-15 นาที</p>
+                <p class="mb-0"><strong>มีรับประกันไหม?</strong><br>หากยอดลดเรามีระบบเติมฟรีให้ครับ</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const select = document.getElementById('serviceSelect');
+    const input = document.getElementById('quantityInput');
+    const display = document.getElementById('totalPrice');
+
+    function updatePrice() {
+        const selectedOption = select.options[select.selectedIndex];
+        const price = selectedOption.getAttribute('data-price');
+        display.innerText = (price * input.value).toFixed(2);
+    }
+    select.addEventListener('change', updatePrice);
+    input.addEventListener('input', updatePrice);
+    // รันครั้งแรกเพื่อให้ราคาเริ่มต้นถูกต้อง
+    updatePrice();
+</script>
+{% endblock %}
