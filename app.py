@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -5,7 +6,10 @@ from models import db, User, Order
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
 
-# LINE Configuration
+# 1. การตั้งค่า Path ฐานข้อมูลให้รองรับ Render
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+# 2. LINE Configuration
 LINE_CHANNEL_ACCESS_TOKEN = 'sJqu5ROglXJpMK4l976CaezwEtwB4QS9z/iugKPOJVdx+zQCgEP9+iRP74IfG/NYjQeQw0nTD1bAiGHlUDdyhgtr13u/RHyHkjQRM6brS3lLZ1bN/lSgXk7IKD3jSSwZojoUZ+dZhyOQ8+zRGwCeTgdB04t89/1O/w1cDnyilFU='
 LINE_ADMIN_USER_ID = 'Uc96074081e475c7ba28fcb730b80e16e' 
 
@@ -17,9 +21,12 @@ def send_line_message(message):
     except Exception as e:
         print(f"Error: {e}")
 
+# 3. Flask App Configuration
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///wroc_database.db'
+# ระบุตำแหน่งฐานข้อมูลให้ชัดเจนป้องกัน Error e3q8
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'wroc_database.db')
 app.config['SECRET_KEY'] = 'dev-key-123'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
@@ -66,7 +73,6 @@ def login():
         
         if user and user.check_password(password):
             login_user(user)
-            # ถ้าเป็น Admin1 ให้ไปหน้าแอดมินโดยตรง
             if user.username == 'Admin1':
                 return redirect(url_for('admin_dashboard'))
             return redirect(url_for('index'))
@@ -98,18 +104,15 @@ def place_order():
     db.session.add(new_order)
     db.session.commit()
     
-    # ส่งแจ้งเตือนเข้า LINE
-   # แก้ไขส่วนการส่งแจ้งเตือนเข้า LINE ให้มีลิงก์งาน
     message_to_admin = (
         f"🔔 มีออเดอร์ใหม่!\n"
         f"👤 ผู้สั่ง: {current_user.username}\n"
         f"🛠 บริการ: {new_order.service_name}\n"
         f"🔢 จำนวน: {quantity}\n"
-        f"🔗 ลิงก์งาน: {link}"  # เพิ่มบรรทัดนี้เพื่อส่งลิงก์เข้าไป
+        f"🔗 ลิงก์งาน: {link}"
     )
     
     send_line_message(message_to_admin)
-    
     return redirect(url_for('view_history'))
 
 @app.route('/history')
@@ -126,7 +129,6 @@ def topup():
         current_user.balance += amount
         db.session.commit()
         return redirect(url_for('index'))
-    # แก้ไขบรรทัดนี้ให้ส่ง user=current_user เข้าไปด้วย
     return render_template('topup.html', user=current_user)
 
 @app.route('/logout')
@@ -134,7 +136,7 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# --- ROUTES สำหรับ ADMIN (ต้องเป็น Admin1 เท่านั้น) ---
+# --- ROUTES สำหรับ ADMIN ---
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -181,17 +183,12 @@ def refund_order(order_id):
         db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
-# --- ส่วนท้ายของไฟล์ app.py ---
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # นับจำนวนออเดอร์แยกตามสถานะของลูกค้าคนนั้นๆ
     total_orders = Order.query.filter_by(user_id=current_user.id).count()
     pending_orders = Order.query.filter_by(user_id=current_user.id, status='Pending').count()
     completed_orders = Order.query.filter_by(user_id=current_user.id, status='Completed').count()
-    
-    # ดึง 5 ออเดอร์ล่าสุดมาโชว์ในตาราง
     recent_orders = Order.query.filter_by(user_id=current_user.id).order_by(Order.id.desc()).limit(5).all()
     
     return render_template('dashboard.html', 
@@ -200,8 +197,9 @@ def dashboard():
                            completed=completed_orders,
                            orders=recent_orders)
 
-# ส่วนท้ายของไฟล์ app.py ที่ถูกต้อง
+# 4. Main Entry Point
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  # สร้างตารางอัตโนมัติ
+        db.create_all()  # สร้างฐานข้อมูลอัตโนมัติ
+    # รันบน Render ผ่าน Port 10000
     app.run(debug=False, host='0.0.0.0', port=10000)
