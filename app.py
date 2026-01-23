@@ -54,8 +54,11 @@ def load_user(user_id):
 @login_required
 def index():
     services = [
-        {'id': 1, 'name': 'ปั้มไลค์ Facebook', 'price': 0.05},
-        {'id': 2, 'name': 'เพิ่มผู้ติดตาม IG', 'price': 0.10}
+        {'id': 1, 'name': 'ปั้มไลค์โพสต์ Facebook', 'price': 0.10},
+        {'id': 2, 'name': 'เพิ่มผู้ติดตาม Facebook', 'price': 0.15},
+        {'id': 3, 'name': 'เพิ่มผู้ติดตามเพจ Facebook', 'price': 0.20},
+        {'id': 4, 'name': 'ปั้มไลค์โพสต์ IG', 'price': 0.15},
+        {'id': 5, 'name': 'เพิ่มผู้ติดตาม IG', 'price': 0.20}
     ]
     return render_template('index.html', services=services)
 
@@ -114,14 +117,38 @@ def place_order():
     quantity = int(request.form.get('quantity'))
     service_id = request.form.get('service')
     link = request.form.get('link')
-    price = 0.05 if service_id == '1' else 0.10
+
+    # 1. เช็คลิมิต 5000
+    if quantity > 5000:
+        flash("ข้อผิดพลาด: จำกัดการสั่งซื้อสูงสุด 5,000 ต่อ 1 ลิงก์เท่านั้น!", "danger")
+        return redirect(url_for('index'))
+
+    # 2. คำนวณราคา
+    price = 0.10 
     total = quantity * price
+    
+    # 3. เช็คยอดเงิน
     if current_user.balance < total:
-        return "ยอดเงินไม่พอ"
+        flash("เงินคงเหลือไม่เพียงพอ", "danger")
+        return redirect(url_for('index'))
+    
+    # 4. หักเงินลูกค้า
     current_user.balance -= total
-    new_order = Order(user_id=current_user.id, service_name="ID: "+service_id, url_link=link, quantity=quantity, total_price=total)
+
+    # 5. สร้างออเดอร์ (เขียนชุดเดียวพอครับ)
+    new_order = Order(
+        user_id=current_user.id, 
+        service_name=f"Service ID: {service_id}", 
+        url_link=link, 
+        quantity=quantity, 
+        total_price=total
+    )
+
+    # 6. บันทึกลงฐานข้อมูล (เขียนชุดเดียวพอครับ)
     db.session.add(new_order)
     db.session.commit()
+
+    # 7. แจ้งเตือน LINE และย้ายไปหน้าประวัติ
     send_line_message(f"🔔 ออเดอร์ใหม่!\n👤: {current_user.username}\n🔗: {link}")
     return redirect(url_for('view_history'))
 
