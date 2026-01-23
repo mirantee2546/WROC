@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container text-center mt-5">
+    <h3>สแกนจ่ายเพื่อเติมเงิน</h3>
+    <p>ยอดเงินที่ต้องชำระ: <strong>{{ amount }} บาท</strong></p>
+    <div class="my-4">
+        <img src="{{ qr_url }}" alt="PromptPay QR Code" class="img-fluid" style="max-width: 300px; border: 1px solid #ddd;">
+    </div>
+    <form action="{{ url_for('confirm_topup') }}" method="POST">
+        <input type="hidden" name="amount" value="{{ amount }}">
+        <button type="submit" class="btn btn-success btn-lg">ยืนยันว่าโอนเงินสำเร็จแล้ว</button>
+    </form>
+</div>
+{% endblock %}

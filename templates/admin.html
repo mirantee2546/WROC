@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 mb-5">
     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-        <h5 class="mb-0"><i class="bi bi-shield-lock-fill me-2"></i>ระบบจัดการหลังบ้าน (Admin Panel)</h5>
+        <h5 class="mb-0"><i class="bi bi-shield-lock-fill me-2"></i>ระบบจัดการออเดอร์ (Order Management)</h5>
         <span class="badge bg-primary">โหมดผู้ดูแลระบบ</span>
     </div>
     <div class="card-body p-0">
@@ -14,8 +14,8 @@
                         <th class="ps-4">ID / ผู้ใช้</th>
                         <th>รายละเอียดบริการ / ลิงก์</th>
                         <th>ราคา</th>
-                        <th>สถานะ</th>
-                        <th class="text-center pe-4">จัดการรายการ</th>
+                        <th>สถานะออเดอร์</th>
+                        <th class="text-center pe-4">จัดการออเดอร์</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,11 +27,7 @@
                         </td>
                         <td>
                             <div class="text-primary fw-bold">{{ order.service_name }}</div>
-                            <small>
-                                <a href="{{ order.url_link }}" target="_blank" class="text-decoration-none text-truncate d-inline-block" style="max-width: 200px;">
-                                    {{ order.url_link }}
-                                </a>
-                            </small>
+                            <small><a href="{{ order.url_link }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 150px;">{{ order.url_link }}</a></small>
                         </td>
                         <td class="fw-bold text-success">{{ "%.2f"|format(order.total_price) }} ฿</td>
                         <td>
@@ -47,10 +43,57 @@
                             <div class="btn-group shadow-sm border rounded-pill overflow-hidden">
                                 <a href="{{ url_for('update_status', order_id=order.id, new_status='Pending') }}" class="btn btn-sm btn-white text-warning fw-bold">รอ</a>
                                 <a href="{{ url_for('update_status', order_id=order.id, new_status='Completed') }}" class="btn btn-sm btn-white text-success fw-bold border-start">สำเร็จ</a>
-                                <a href="{{ url_for('refund_order', order_id=order.id) }}" 
-                                   class="btn btn-sm btn-white text-danger fw-bold border-start"
-                                   onclick="return confirm('ยืนยันการยกเลิกรายการและคืนเงินให้ลูกค้า?')">ยกเลิก</a>
+                                <a href="{{ url_for('refund_order', order_id=order.id) }}" class="btn btn-sm btn-white text-danger fw-bold border-start" onclick="return confirm('ยืนยันการคืนเงิน?')">ยกเลิก</a>
                             </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 border-top border-primary border-5">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-wallet2 me-2"></i>รายการแจ้งเติมเงินที่รออนุมัติ</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">วัน-เวลา</th>
+                        <th>ผู้ใช้งาน</th>
+                        <th>ยอดโอน</th>
+                        <th>หลักฐานสลิป</th>
+                        <th class="text-center pe-4">การดำเนินการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in topups %}
+                    <tr>
+                        <td class="ps-4 small">{{ req.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td><strong>User ID: {{ req.user_id }}</strong></td>
+                        <td class="fw-bold text-primary">{{ "%.2f"|format(req.amount) }} ฿</td>
+                        <td>
+                            <a href="{{ url_for('static', filename='slips/' + req.slip_image) }}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill">
+                                <i class="bi bi-search me-1"></i>คลิกดูสลิป
+                            </a>
+                        </td>
+                        <td class="text-center pe-4">
+                            <a href="{{ url_for('approve_topup', id=req.id) }}" 
+                               class="btn btn-success btn-sm px-4 rounded-pill fw-bold shadow-sm"
+                               onclick="return confirm('ยืนยันว่าตรวจสอบยอดเงินสำเร็จและต้องการเติมเงินจำนวน {{ req.amount }} บาท?')">
+                                อนุมัติยอดเงิน
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-check2-circle fs-1 d-block mb-2"></i>
+                            ไม่มีรายการแจ้งโอนที่รอการตรวจสอบ
                         </td>
                     </tr>
                     {% endfor %}
