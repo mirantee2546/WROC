@@ -18,15 +18,21 @@
                     <label class="form-label small fw-bold text-muted">ระบุจำนวนเงิน (บาท)</label>
                     <div class="input-group input-group-lg">
                         <span class="input-group-text bg-light border-2" style="border-right: none;"><i class="bi bi-cash-stack"></i></span>
-                        <input type="number" name="amount" class="form-control border-2" placeholder="0.00" min="1" step="0.01" required style="border-left: none;">
+                        <input type="number" name="amount" id="amount-input" class="form-control border-2" placeholder="0.00" min="1" step="0.01" required style="border-left: none;">
                     </div>
                     <div class="form-text mt-2">เติมขั้นต่ำ 1.00 บาท</div>
                 </div>
 
                 <div class="p-3 bg-light rounded-3 border mb-4 text-center">
                     <p class="small fw-bold text-muted mb-2">สแกนชำระเงินผ่าน PromptPay</p>
-                    <img id="qr-code" src="https://promptpay.io/0981810233/1.00.png" alt="QR Code" class="img-fluid rounded mb-2" style="max-width: 200px; border: 5px solid white shadow-sm;">
-                    <p class="small text-muted mb-0">สแกนเพื่อจ่ายเงิน: <strong id="display-amount">1.00</strong> บาท</p>
+                    <div class="card p-2 d-inline-block shadow-sm mb-2 bg-white">
+                        <img id="qr-code" src="https://promptpay.io/0981810233/1.00.png" alt="QR Code" class="img-fluid rounded" style="max-width: 200px; border: 5px solid white;">
+                    </div>
+                    <p class="small text-muted mb-3">ยอดชำระ: <strong id="display-amount">1.00</strong> บาท</p>
+                    
+                    <button type="button" class="btn btn-success btn-sm shadow-sm px-4" onclick="saveQRToPhone()">
+                        <i class="bi bi-download me-2"></i>บันทึกคิวอาร์โค้ดลงเครื่อง
+                    </button>
                 </div>
 
                 <div class="mb-4">
@@ -55,15 +61,29 @@
 </div>
 
 <script>
-    const amountInput = document.querySelector('input[name="amount"]');
+    const amountInput = document.getElementById('amount-input');
     const qrImage = document.getElementById('qr-code');
     const displayAmount = document.getElementById('display-amount');
 
+    // อัปเดต QR Code ตามจำนวนเงิน
     amountInput.addEventListener('input', function() {
         const amount = this.value || 1.00;
         const promptPayId = "0981810233"; 
         qrImage.src = `https://promptpay.io/${promptPayId}/${amount}.png`;
         displayAmount.innerText = amount;
     });
+
+    // ฟังก์ชันบันทึกรูป
+    function saveQRToPhone() {
+        const img = document.getElementById('qr-code');
+        const link = document.createElement('a');
+        link.href = img.src;
+        link.download = `WROC_Pay_${displayAmount.innerText}THB.png`; 
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        alert('บันทึกคิวอาร์โค้ดลงในเครื่องแล้ว โปรดเปิดในแอปธนาคารเพื่อสแกนจ่าย');
+    }
 </script>
 {% endblock %}
