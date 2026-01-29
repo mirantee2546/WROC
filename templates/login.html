@@ -1,17 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4">
-        <div class="card shadow border-0 p-4">
-            <h3 class="text-center text-primary fw-bold mb-4">WROC Login</h3>
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-lg border-0 p-4 rounded-4">
+            <div class="text-center mb-4">
+                <img src="{{ url_for('static', filename='img/icon.png') }}" 
+                     alt="WROC Logo" 
+                     class="img-fluid mb-2" 
+                     style="max-width: 150px; height: auto;">
+                <h4 class="fw-bold text-primary">WROC Login</h4>
+            </div>
+
             <form action="/login" method="POST">
-                <input type="text" name="username" class="form-control mb-3" placeholder="Username" required>
-                <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">เข้าสู่ระบบ</button>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">ชื่อผู้ใช้งาน</label>
+                    <input type="text" name="username" class="form-control" placeholder="Username" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">รหัสผ่าน</label>
+                    <input type="password" name="password" class="form-control" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                    เข้าสู่ระบบ
+                </button>
             </form>
-            <div class="mt-4 text-center">
-                <a href="/register" class="btn btn-outline-secondary w-100 btn-sm">สมัครสมาชิกใหม่</a>
+
+            <hr class="my-4 text-muted">
+
+            <div class="text-center">
+                <p class="small text-muted mb-2">ยังไม่มีบัญชีผู้ใช้งาน?</p>
+                <a href="/register" class="btn btn-outline-secondary w-100 btn-sm rounded-pill">
+                    สมัครสมาชิกใหม่
+                </a>
             </div>
         </div>
     </div>
